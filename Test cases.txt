@@ -1,0 +1,152 @@
+Scenario: Clicking on Chat icon opens the chatting window
+Given user is on Contact us page
+When clicks Chat icon in the square below topic dropdown
+Then the pop u winwod for stating a chat is opened
+
+Scenario: Clicking on Instagram icon opens the Instagram page of the company
+Given user is on Contact us page
+When clicks Instagram icon in the square below topic dropdown
+Then the Instagram page for the company is opened in a new brower tab
+
+Scenario: Clicking on Facebook icon opens the Instagram page of the company
+Given user is on Contact us page
+When clicks Facebook icon in the square below topic dropdown
+Then the Facebook page for the company is opened in a new brower tab
+
+// Depends on the Acceptance criteria but seems logical
+Scenario: Clicking on Phone icon when on mobile device opens the dialing app
+Given user is on Contact us page
+When clicks Phone icon in the square below topic dropdown
+Then the dialing app on the mobile device is opened 
+And the phone number is already populated
+
+Scenario: User can't continue without selecting a topic first (Automation candidate)
+Given user is on Contact us page
+When clicks button Next
+Then sees a error message "Please choose a question." is displayed
+
+// This depends on the Acceptance criteria, it just doesn't seem well to me for the message to stay, but could be the desired behaviour
+Scenario: Error message "Please choose a question." dissapears after a question is selected
+Given user is on Contact us page
+And the user has clicked button Next
+When clicks on Select your topic dropdown
+And selects "Delivery, Return or Refund" from the dropdown options
+Then sees the error message "Please choose a question." has disappeared
+
+Scenario Outline: Selecting a given topic shows correct FAQ (Automation candidate)
+Given user is on Contact us page
+When clicks on Select your topic dropdown
+And selects <topic> from the dropdown options
+Then sees the correct FAQ are displayed
+And sees a text "Not what you're looking for? Click "Next" to provide us with more info." is displayed right after the questions
+
+Examples:
+| topic                        |
+| "Delivery, Return or Refund" |
+| "Order or Payment related"   |
+| "Product Registration"       |
+| "Product Information"        |
+| "Maintanance and Usage"      |
+| "General Question"           |
+
+Scenario: Opening FAQ "What is your expected shipping timeline" shows correct text as answer
+Given user is on Contact us page
+And has clicked on Select your topic dropdown
+And has selected "Delivery, Return or Refund" from the topic dropdown
+When clicks on FAQ "What is your expected shipping timeline"
+Then sees correct text as the aswer of the question
+
+^ Similar tests should be added for all topics and the answers to their FAQ
+
+Scenario: Contact us form has correct fields for selected topic "Delivery, Return or Refund" (Automation candidate)
+Given user is on Contact us page
+And has clicked on Select your topic dropdown
+And has selected "Delivery, Return or Refund" from the topic dropdown
+When clicks Next button
+Then is navigated to Contact us from
+And sees the fields that need to be filled are "Order Number, Item Code/Name, Description, First Name, Last Name, Email, Verify Email, Phone, Country, Pictures/Video (a maximum of 15mb)"
+And sees all the fiels are marked as mandatory
+
+^ Similar tests should be added for the rest of the topics as I see there is some difference in the fields
+
+Scenario: Clicking button Next when on Contact us form without filling any of the mandatory fields produces warning messages (Automation candidate)
+Given user is on Contact us page
+And has clicked on Select your topic dropdown
+And has selected "Delivery, Return or Refund" from the topic dropdown
+And has clicked Next button
+When clicks Next button without filling any of the mandatory fields
+Then sees a warning message "Please enter some valid input. Input is not optional." under all of the fields but 1
+And sees a warning message "Please select a choice." under Country field
+
+Scenario: Failing to enter Order number results in warning message showing the request has not been sent
+Given user is on Contact us page
+And has clicked on Select your topic dropdown
+And has selected "Delivery, Return or Refund" from the topic dropdown
+And has clicked Next button
+When fills in all the fields except the Order number
+And clicks Next button
+Then sees a warning message "Please enter some valid input. Input is not optional." under Order number field
+
+^ Similar tests for filling all but 1 fileds should be added
+
+Scenario: Filling in invalid email results in a warning message showing the request has not been sent (Automation candidate)
+Given user is on Contact us page
+And has clicked on Select your topic dropdown
+And has selected "Delivery, Return or Refund" from the topic dropdown
+And has clicked Next button
+When fills in invalid email address
+And fills in all the rest of the mandatory fields
+And clicks Next button
+Then sees a warning message below the Email field indicating the entered email is invalid
+
+Scenario: Filling in invalid phone number results in a warning message showing the request has not been sent
+Given user is on Contact us page
+And has clicked on Select your topic dropdown
+And has selected "Delivery, Return or Refund" from the topic dropdown
+And has clicked Next button
+When fills in invalid phone number
+And fills in all the rest of the mandatory fields
+And clicks Next button
+Then sees a warning message below the Phone number field indicating the entered number is invalid
+ 
+Scenario: Uploading a video aboved allowed size produces a warning message showing the request has not been sent
+Given user is on Contact us page
+And has clicked on Select your topic dropdown
+And has selected "Delivery, Return or Refund" from the topic dropdown
+And has clicked Next button
+And has filled in all the mandatory fields
+When tries to upload a video above allowed size
+And clicks Next button
+Then sees a warning message below the Upload video field indicating there was an issue with the upload
+
+Scenario: Trying to upload a file that is not a video produces a warning message showing the request has not been sent
+Given user is on Contact us page
+And has clicked on Select your topic dropdown
+And has selected "Delivery, Return or Refund" from the topic dropdown
+And has clicked Next button
+And has filled in all the mandatory fields
+When tries to upload a file that is not a video
+And clicks Next button
+Then sees a warning message below the Upload video field indicating there was an issue with the upload
+
+Scenario: Filling in all the mandatory fields correctly results in correctly send request (Automation candidate)
+Given user is on Contact us page
+And has clicked on Select your topic dropdown
+And has selected "Delivery, Return or Refund" from the topic dropdown
+And has clicked Next button
+And has filled in all the mandatory fields correctly
+When clicks Next button
+Then sees a new screen with text "Thank you for contacting us about your product. You will receive a confirmation in your email. We will process your request as soon as possible."
+And the user sees a confirmation email in their email inbox
+
+My motivation when selecting Automation candidates is to ensure the user would be able to do their job without encountering any blocking bugs.
+This means we need to ensure the main flow works correctly.
+Having all the FAQ present is important as the user could find their answer and not waist time to contact the company.
+If they do need to contact the company, we need to ensure the form can be filled and sent in without an issue.
+As the email is the point of contact for later on, we need to make sure only valid emails are filled in 
+(this I think would be better tested with a less expensive tets than UI test for exmaple unit/integration) 
+and the verify email has the same email input (no test for this present above, 
+but I would advocate for unit/integration on that as well).
+If the test framework is mature enough (meanining testing the upload of a video is easy enough) 
+and discussions with product/dev team have made clear the video is a very important part, 
+then I'd automate tests around that as well.
